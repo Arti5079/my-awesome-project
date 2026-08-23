@@ -1,0 +1,6 @@
+path: D:/Aquirism/fish_dataset
+train: images/train
+val: images/val
+
+  0: healthy_normal
+  1: unhealthy_abnormal
