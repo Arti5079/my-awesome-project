@@ -291,14 +291,19 @@ detector, health_model = load_models()
 
 
 # ============================================================
-# VIDEO CAPTURE
+# VIDEO CAPTURE INITIALIZATION
 # ============================================================
 
 if "video_cap" not in st.session_state:
     st.session_state.video_cap = None
 
 if st.session_state.video_cap is None or not st.session_state.video_cap.isOpened():
-    st.session_state.video_cap = cv2.VideoCapture("sample_fish.mp4")
+    # Try opening the local sample video file in the repo
+    cap = cv2.VideoCapture("sample_fish.mp4")
+    if not cap.isOpened():
+        # Fallback if path needs absolute handling on cloud
+        cap = cv2.VideoCapture("./sample_fish.mp4")
+    st.session_state.video_cap = cap
 
 
 # ============================================================
