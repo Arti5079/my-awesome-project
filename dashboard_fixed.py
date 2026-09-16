@@ -442,4 +442,4 @@ def fish_monitoring():
 # Call the fragment function to render
 fish_monitoring()
 
-fish_monitoring()
+
