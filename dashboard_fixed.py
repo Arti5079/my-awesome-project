@@ -313,21 +313,7 @@ if st.session_state.video_cap is None or not st.session_state.video_cap.isOpened
     st.session_state.video_cap = cap
 
 
-# ============================================================
-# METRICS CONTAINERS (Fragment ke bahar rakhein taaki blink na karein)
-# ============================================================
-col1, col2, col3, col4 = st.columns(4)
-with col1:
-    fish_metric = st.empty()
-with col2:
-    unique_metric = st.empty()
-with col3:
-    healthy_metric = st.empty()
-with col4:
-    unhealthy_metric = st.empty()
 
-# Video display placeholder
-video_placeholder = st.empty()
 
 # ============================================================
 # FISH VIDEO STREAM FRAGMENT (Sirf video aur tracking ke liye)
