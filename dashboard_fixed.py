@@ -317,7 +317,7 @@ if st.session_state.video_cap is None or not st.session_state.video_cap.isOpened
 # FISH VIDEO STREAM & PROCESSING
 # ============================================================
 
-@st.fragment(run_every=0.25)
+@st.fragment(run_every=1.0)
 def fish_monitoring():
     if not st.session_state.is_running:
         video_placeholder.info("Click **▶ Start Live Monitoring** in the sidebar to start fish monitoring.")
