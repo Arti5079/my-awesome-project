@@ -332,7 +332,7 @@ video_placeholder = st.empty()
 # ============================================================
 # FISH VIDEO STREAM FRAGMENT (Sirf video aur tracking ke liye)
 # ============================================================
-@st.fragment(run_every=1.0)
+@st.fragment(run_every=1.5)
 def fish_monitoring():
     if not st.session_state.is_running:
         video_placeholder.info("Click **▶ Start Live Monitoring** in the sidebar to start fish monitoring.")
