@@ -290,19 +290,26 @@ def load_models():
 detector, health_model = load_models()
 
 
+import os
+
 # ============================================================
-# VIDEO CAPTURE INITIALIZATION
+# VIDEO CAPTURE INITIALIZATION (Robust Path Handling)
 # ============================================================
 
 if "video_cap" not in st.session_state:
     st.session_state.video_cap = None
 
 if st.session_state.video_cap is None or not st.session_state.video_cap.isOpened():
-    # Try opening the local sample video file in the repo
-    cap = cv2.VideoCapture("sample_fish.mp4")
+    # Get absolute path relative to the script location
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    video_path = os.path.join(script_dir, "sample_fish.mp4")
+    
+    cap = cv2.VideoCapture(video_path)
+    
+    # Fallback if absolute path fails
     if not cap.isOpened():
-        # Fallback if path needs absolute handling on cloud
-        cap = cv2.VideoCapture("./sample_fish.mp4")
+        cap = cv2.VideoCapture("sample_fish.mp4")
+        
     st.session_state.video_cap = cap
 
 
