@@ -314,16 +314,30 @@ if st.session_state.video_cap is None or not st.session_state.video_cap.isOpened
 
 
 # ============================================================
-# FISH VIDEO STREAM & PROCESSING
+# METRICS CONTAINERS (Fragment ke bahar rakhein taaki blink na karein)
 # ============================================================
+col1, col2, col3, col4 = st.columns(4)
+with col1:
+    fish_metric = st.empty()
+with col2:
+    unique_metric = st.empty()
+with col3:
+    healthy_metric = st.empty()
+with col4:
+    unhealthy_metric = st.empty()
 
+# Video display placeholder
+video_placeholder = st.empty()
+
+# ============================================================
+# FISH VIDEO STREAM FRAGMENT (Sirf video aur tracking ke liye)
+# ============================================================
 @st.fragment(run_every=1.0)
 def fish_monitoring():
     if not st.session_state.is_running:
         video_placeholder.info("Click **▶ Start Live Monitoring** in the sidebar to start fish monitoring.")
         return
 
-    # Check if video capture exists and is open
     if "video_cap" not in st.session_state or st.session_state.video_cap is None:
         video_placeholder.error("❌ Video capture not initialized.")
         return
@@ -331,12 +345,11 @@ def fish_monitoring():
     cap = st.session_state.video_cap
 
     if not cap.isOpened():
-        video_placeholder.error("❌ Cannot open 'sample_fish.mp4'. Please ensure the file is uploaded to your GitHub repository.")
+        video_placeholder.error("❌ Cannot open 'sample_fish.mp4'.")
         return
 
     ret, frame = cap.read()
 
-    # If video ends, loop back to the beginning
     if not ret:
         cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
         ret, frame = cap.read()
@@ -345,8 +358,8 @@ def fish_monitoring():
         video_placeholder.error("❌ Cannot read frames from video file.")
         return
 
-    # Resize frame for optimal performance and display
-    frame = cv2.resize(frame, (960, 540))
+    # Optimized resolution for smooth cloud streaming
+    frame = cv2.resize(frame, (640, 360))
 
     try:
         results = detector.track(
@@ -398,14 +411,12 @@ def fish_monitoring():
                             else:
                                 healthy_count += 1
                     except Exception as e:
-                        print("Health model error:", e)
                         healthy_count += 1
                 else:
                     healthy_count += 1
             else:
                 healthy_count += 1
 
-            # Draw bounding box and label on frame
             cv2.rectangle(frame, (x1, y1), (x2, y2), box_color, 2)
             label = f"ID:{track_id} {status}"
             cv2.putText(
@@ -413,24 +424,22 @@ def fish_monitoring():
                 label,
                 (x1, max(25, y1 - 10)),
                 cv2.FONT_HERSHEY_SIMPLEX,
-                0.55,
+                0.5,
                 box_color,
                 2
             )
 
-    # Update metric UI components safely
+    # Update metric UI components smoothly using placeholders
     fish_metric.metric("Fish in Current View", str(current_count))
     unique_metric.metric("Total Unique Fish", str(len(st.session_state.unique_ids)))
     healthy_metric.metric("Healthy Fish", str(healthy_count))
     unhealthy_metric.metric("⚠️ Unhealthy Fish", str(unhealthy_count))
 
-    # Convert BGR to RGB for Streamlit image rendering
+    # Render frame cleanly
     frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    
-    # Render frame inside the video placeholder
     video_placeholder.image(frame_rgb, channels="RGB", use_container_width=True)
 
-
+# Call the fragment function to render
 fish_monitoring()
 
 fish_monitoring()
