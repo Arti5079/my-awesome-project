@@ -314,31 +314,38 @@ if st.session_state.video_cap is None or not st.session_state.video_cap.isOpened
 
 
 # ============================================================
-# FISH VIDEO STREAM
+# FISH VIDEO STREAM & PROCESSING
 # ============================================================
 
 @st.fragment(run_every=0.25)
 def fish_monitoring():
     if not st.session_state.is_running:
-        video_placeholder.info("Click **▶ Start Live Monitoring** to start fish monitoring.")
+        video_placeholder.info("Click **▶ Start Live Monitoring** in the sidebar to start fish monitoring.")
+        return
+
+    # Check if video capture exists and is open
+    if "video_cap" not in st.session_state or st.session_state.video_cap is None:
+        video_placeholder.error("❌ Video capture not initialized.")
         return
 
     cap = st.session_state.video_cap
 
-    if cap is None or not cap.isOpened():
-        video_placeholder.error("❌ Cannot open sample_fish.mp4")
+    if not cap.isOpened():
+        video_placeholder.error("❌ Cannot open 'sample_fish.mp4'. Please ensure the file is uploaded to your GitHub repository.")
         return
 
     ret, frame = cap.read()
 
+    # If video ends, loop back to the beginning
     if not ret:
         cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
         ret, frame = cap.read()
 
-    if not ret:
-        video_placeholder.error("❌ Cannot read video.")
+    if not ret or frame is None:
+        video_placeholder.error("❌ Cannot read frames from video file.")
         return
 
+    # Resize frame for optimal performance and display
     frame = cv2.resize(frame, (960, 540))
 
     try:
@@ -352,7 +359,7 @@ def fish_monitoring():
             verbose=False
         )
     except Exception as e:
-        video_placeholder.error(f"YOLO Error: {e}")
+        video_placeholder.error(f"YOLO Tracking Error: {e}")
         return
 
     current_count = 0
@@ -370,7 +377,7 @@ def fish_monitoring():
             x1, y1, x2, y2 = map(int, box)
 
             status = "Healthy"
-            box_color = (0, 255, 0)
+            box_color = (0, 255, 0) # Green
 
             if health_model is not None:
                 h, w, _ = frame.shape
@@ -386,7 +393,7 @@ def fish_monitoring():
 
                             if "unhealthy" in name_lower or "sick" in name_lower or "abnormal" in name_lower:
                                 status = "⚠️ UNHEALTHY"
-                                box_color = (0, 0, 255)
+                                box_color = (0, 0, 255) # Red
                                 unhealthy_count += 1
                             else:
                                 healthy_count += 1
@@ -398,6 +405,7 @@ def fish_monitoring():
             else:
                 healthy_count += 1
 
+            # Draw bounding box and label on frame
             cv2.rectangle(frame, (x1, y1), (x2, y2), box_color, 2)
             label = f"ID:{track_id} {status}"
             cv2.putText(
@@ -410,13 +418,19 @@ def fish_monitoring():
                 2
             )
 
+    # Update metric UI components safely
     fish_metric.metric("Fish in Current View", str(current_count))
     unique_metric.metric("Total Unique Fish", str(len(st.session_state.unique_ids)))
     healthy_metric.metric("Healthy Fish", str(healthy_count))
     unhealthy_metric.metric("⚠️ Unhealthy Fish", str(unhealthy_count))
 
+    # Convert BGR to RGB for Streamlit image rendering
     frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    
+    # Render frame inside the video placeholder
     video_placeholder.image(frame_rgb, channels="RGB", use_container_width=True)
 
+
+fish_monitoring()
 
 fish_monitoring()
